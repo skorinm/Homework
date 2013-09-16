@@ -120,7 +120,8 @@ int main(int argc, char **argv, char **envp)
 			printf("\npoll() GPIO %d interrupt occurred, value=%c, len=%d\n",
 				 gpio, buf[0], len);
 				toggle = !toggle;
-				gpio_set_value(30, toggle);
+				printf("%d set to %i",atoi(argv[2]), toggle);
+				gpio_set_value(atoi(argv[2]), toggle);
 		}
 
 		if (fdset[0].revents & POLLIN) {
