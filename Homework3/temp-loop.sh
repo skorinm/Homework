@@ -1,8 +1,9 @@
 #!/bin/bash
 
-# Running this program will spit out the temp of both temp sensors 
-mounted on the board.
+# Running this program will spit out the temp of both temp sensors mounted on the board.
 # 9/19/13 Matt Skorina
+
+clear
 
 while true; do
 	temp_48=`i2cget -y 1 0x48 0`
