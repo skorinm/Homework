@@ -5,6 +5,9 @@
 
 clear
 
+echo 51 > /sys/class/gpio/export
+echo in > /sys/class/gpio/gpio51/direction
+
 while true; do
 	temp_48=`i2cget -y 1 0x48 0`
 	temp_49=`i2cget -y 1 0x49 0`
@@ -14,7 +17,8 @@ while true; do
 
 	temp_49=`echo $((temp_49))*1.8+32 | bc`
 	echo "Outer sensor is" $temp_49 "F"
-
+	echo Inner Sensor ALERT=`cat /sys/class/gpio/gpio51/value`
 	sleep 1
+	
 	clear
 done

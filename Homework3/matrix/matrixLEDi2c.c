@@ -52,6 +52,7 @@
 #define right_button 3
 #define up_button 2
 #define down_button 49
+#define clear_button 51
 
 
 char getch();
@@ -84,11 +85,11 @@ int x = 0;
 // The upper btye is RED, the lower is GREEN.
 // The single color display responds only to the lower byte
 static __u16 smile_bmp[]=
-	{0xAA, 0x42, 0xa9, 0x85, 0x85, 0xa9, 0x42, 0x3c}; //0x3c
+	{0xAA, 0xff, 0xa9, 0x85, 0x85, 0xa9, 0x42, 0x3c}; //0x3c
 static __u16 frown_bmp[]=
-	{0x3c00, 0x4200, 0xa900, 0x8500, 0x8500, 0xa900, 0x4200, 0x3c00};
+	{0x3c00, 0x42ff, 0xa900, 0x8500, 0x8500, 0xa900, 0x4200, 0x3c00};
 static __u16 neutral_bmp[]=
-	{0x3c3c, 0x4242, 0xa9a9, 0x8989, 0x8989, 0xa9a9, 0x4242, 0x3c3c};
+	{0xff00, 0x00ff, 0xa9a9, 0x8989, 0x8989, 0xa9a9, 0x4242, 0x3c3c};
 
 static void help(void) __attribute__ ((noreturn));
 
@@ -170,8 +171,9 @@ int main(int argc, char *argv[])
 //	Display a series of pictures
 	//write_block(file, smile_bmp);
 	//sleep(1);
-	//write_block(file, neutral_bmp);
-	//sleep(1);
+	//char test_pic[] = {0xff00, 0x00ff, 0xa9a9, 0x8989, 0x8989, 0xa9a9, 0x4242, 0x3c3c};
+	//write_block(file, test_pic);
+	//sleep(5);
 	//write_block(file, smile_bmp);
 
 
@@ -206,8 +208,13 @@ gpio_set_value(30, toggle);
 	gpio_set_dir(down_button, "in");
 	gpio_set_edge(down_button, "falling");
 	gpio_fd[3] = gpio_fd_open(down_button, O_RDONLY);
+	/*
+	gpio_export(clear_button);
+	gpio_set_dir(clear_button, "in");
+	gpio_set_edge(clear_button, "falling");
+	gpio_fd[4] = gpio_fd_open(left_button, O_RDONLY);
 	
-
+*/
 	
 	for (row = 0; row < width; row++) {
 		for (col = 0; col < height; col++) {
@@ -219,7 +226,7 @@ gpio_set_value(30, toggle);
 	while (1) {
 		
 		updateScreen(spots);
-		int disp[]= {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+		static __u16 disp[8];
 		int m_col, m_row;
 		int col_num = 0;
 		for (m_col = 0; m_col < width; m_col++) {
@@ -227,14 +234,17 @@ gpio_set_value(30, toggle);
 			for (m_row = 0; m_row < height; m_row++) {
 				col_num = col_num + spots[m_row][m_col]*(1 << m_row);
 			}
+			disp[m_col] = col_num;
 			
 		}
-		fprintf(stderr,"Num: %i\n",col_num);
-		//fprintf(stderr, "%d\n",i);
+		//int dispa[8]= {0x00, 0x42, 0xa9, 0x85, 0x85, 0xa9, 0x42, 0x3c};
+		//fprintf(stderr,"Num: %i\n",col_num);
+		//fprintf(stderr, "%d\n",x);
+		disp[x] = disp[x] + 256*(1 << y);
 			
 		
 		
-		//int disp[]= {0x00, 0x42, 0xa9, 0x85, 0x85, 0xa9, 0x42, 0x3c};
+		//disp[]= {0x00, 0x42, 0xa9, 0x85, 0x85, 0xa9, 0x42, 0x3c};
 		write_block(file, disp);
 		
 		
@@ -266,7 +276,8 @@ gpio_set_value(30, toggle);
 			if (x > width - 1) {
 				x = width - 1;
 			}
-		} else if (control == 'q') {
+		} else if (control == 4) {
+		//fprintf(stderr, "%d\n",x);
 			for (row = 0; row < width; row++) {
 				for (col = 0; col < height; col++) {
 					spots[row][col] = 0;
@@ -290,7 +301,7 @@ for(i = 0; i < 4; i++){
 	fdset[i].events = POLLPRI;
 }
 
-int rc = poll(fdset, 4, -1);
+int rc = poll(fdset, 5, -1);
 if (rc < 0){
 	return -1;
 }
@@ -303,7 +314,7 @@ for (i = 0; i < 4; i++){
 	buf[0] = '\0';
 		read(fdset[i].fd, buf, 1);
 		if (buf[0] == 0) {
-			//fprintf(stderr, "%d\n",i);
+			fprintf(stderr, "%d\n",i);
 			return i;
 		}
 	}
