@@ -1,0 +1,11 @@
+[Unit]
+Description=BoneServer
+
+[Service]
+Environment=NODE_PATH=/usr/lib/node_modules
+WorkingDirectory=/home/root/ECE497/Skorina/Homework6/
+ExecStart=/home/root/ECE497/Skorina/Homework6/boneServer.js
+SyslogIdentifier=boneserver
+
+[Install]
+WantedBy=multi-user.target
